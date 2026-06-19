@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIN-RAG Master Supervisor Dashboard</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">🚀</div>
+                <h2>FIN-RAG Dashboard</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="chat-tab">
+                    <span class="icon">💬</span> Chat Agent
+                </button>
+                <button class="nav-item" data-tab="sql-tab">
+                    <span class="icon">📊</span> SQL Analytics
+                </button>
+                <button class="nav-item" data-tab="pdf-tab">
+                    <span class="icon">📄</span> PDF Research
+                </button>
+                <button class="nav-item" data-tab="cache-tab">
+                    <span class="icon">💾</span> Semantic Cache
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="dot online"></span>
+                    <span>System Connected</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <h1>FIN-RAG Master Supervisor</h1>
+                <p>Multi-agent Routing & Retrieval Pipeline</p>
+            </header>
+
+            <!-- Tabs Content -->
+            <div class="tab-content active" id="chat-tab">
+                <div class="chat-layout">
+                    <!-- Chat Area -->
+                    <div class="chat-container glass">
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="message assistant">
+                                <div class="avatar">🤖</div>
+                                <div class="message-content">
+                                    <p>Welcome to FIN-RAG Master Supervisor. I can route your questions to specialized agents:</p>
+                                    <ul>
+                                        <li><strong>PDF Research Specialist:</strong> Searches unstructured document chunks (e.g., quarterly reports, Apple Q4 data).</li>
+                                        <li><strong>SQL Analytics Specialist:</strong> Queries structured company & financial database tables.</li>
+                                    </ul>
+                                    <p>Ask me a financial question!</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chat-input" placeholder="Type a financial question..." autocomplete="off">
+                            <button id="send-btn" class="send-btn">
+                                <span>Send</span>
+                                <span class="arrow">➔</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Flow Visualization & Trace panel -->
+                    <div class="trace-container glass">
+                        <h3>Agent Execution Flow</h3>
+                        <div class="flow-visualizer" id="flow-visualizer">
+                            <div class="flow-node user-node active" id="node-user">
+                                <div class="node-icon">👤</div>
+                                <span>User</span>
+                            </div>
+                            <div class="flow-connector" id="conn-1"></div>
+                            <div class="flow-node supervisor-node" id="node-supervisor">
+                                <div class="node-icon">⚖️</div>
+                                <span>Supervisor</span>
+                            </div>
+                            <div class="flow-connector branches" id="conn-2">
+                                <div class="branch-line up"></div>
+                                <div class="branch-line down"></div>
+                            </div>
+                            <div class="flow-branches-container">
+                                <div class="flow-node specialist-node pdf-branch" id="node-pdf">
+                                    <div class="node-icon">📄</div>
+                                    <span>PDF Specialist</span>
+                                </div>
+                                <div class="flow-node specialist-node sql-branch" id="node-sql">
+                                    <div class="node-icon">🗄️</div>
+                                    <span>SQL Specialist</span>
+                                </div>
+                            </div>
+                            <div class="flow-connector branches merge" id="conn-3">
+                                <div class="branch-line up"></div>
+                                <div class="branch-line down"></div>
+                            </div>
+                            <div class="flow-node finish-node" id="node-finish">
+                                <div class="node-icon">🏁</div>
+                                <span>Answer Synthesizer</span>
+                            </div>
+                        </div>
+
+                        <div class="trace-steps-list">
+                            <h4>Trace Log</h4>
+                            <div class="steps-scroll" id="trace-steps-list">
+                                <div class="no-trace-yet">Ask a question to see real-time agent trace logs.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="sql-tab">
+                <div class="pane glass">
+                    <div class="pane-header">
+                        <h3>SQL Database Results</h3>
+                        <span class="metric" id="sql-rows-count">0 rows returned</span>
+                    </div>
+                    <div class="sql-query-display" id="sql-query-display">
+                        -- No SQL executed yet. Ask a database question in Chat.
+                    </div>
+                    <div class="table-scroll-container">
+                        <table class="data-table" id="sql-data-table">
+                            <thead>
+                                <tr><th>No Data</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Ask a question that queries metrics or company profiles to see SQL results.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="pdf-tab">
+                <div class="pane glass">
+                    <div class="pane-header">
+                        <h3>PDF Retrieval Chunks</h3>
+                        <span class="metric" id="pdf-chunks-count">0 chunks retrieved</span>
+                    </div>
+                    <div class="pdf-chunks-grid" id="pdf-chunks-grid">
+                        <div class="empty-state">
+                            <span class="empty-icon">📄</span>
+                            <p>Ask a question about financial documents or reports to retrieve relevant document chunks.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="cache-tab">
+                <div class="pane glass">
+                    <div class="pane-header">
+                        <h3>Semantic Cache Analytics</h3>
+                    </div>
+                    <div class="cache-metrics">
+                        <div class="metric-card glass-card">
+                            <span class="metric-label">Cache Efficiency</span>
+                            <span class="metric-val" id="cache-efficiency">N/A</span>
+                        </div>
+                        <div class="metric-card glass-card">
+                            <span class="metric-label">Total Queries</span>
+                            <span class="metric-val" id="cache-total-queries">0</span>
+                        </div>
+                        <div class="metric-card glass-card">
+                            <span class="metric-label">Cache Hits</span>
+                            <span class="metric-val" id="cache-hits-count">0</span>
+                        </div>
+                    </div>
+                    <div class="cache-logs-container">
+                        <h4>Cache Activity Log</h4>
+                        <div class="cache-log-list" id="cache-log-list">
+                            <div class="empty-state">No cache activity recorded yet.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

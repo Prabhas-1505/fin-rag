@@ -1,0 +1,157 @@
+\documentclass[9.5pt,a4paper]{article}
+\usepackage[left=0.5in, right=0.5in, top=0.1in, bottom=0.3in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{tabularx}
+
+%--- Section style ------------------------------------------------------------
+\titleformat{\section}{\small\bfseries\scshape}{}{0em}{}
+  [\vspace{0pt}\hrule height 0.5pt\vspace{2pt}]
+\titlespacing{\section}{0pt}{4pt}{1pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+\setlist[itemize]{
+  label=$\bullet$,
+  leftmargin=1.3em,
+  itemsep=0.3pt,
+  topsep=1.0pt,
+  parsep=0pt,
+  partopsep=0pt
+}
+
+\newcommand{\entry}[4]{%
+  \vspace{1.5pt}\noindent\textbf{#1}\hfill\textbf{\small#2}\\[-3.5pt]
+  \textit{\small#3}\hfill\textit{\small#4}\vspace{0.2pt}%
+}
+\newcommand{\proj}[2]{%
+  \vspace{1.5pt}\noindent\textbf{#1}\hfill\textit{\small#2}\vspace{0.2pt}%
+}
+
+\begin{document}
+\pagestyle{empty}
+
+%==============================================================================
+% HEADER
+%==============================================================================
+\begin{center}
+  {\Large\textbf{Avvaru Naga Prabhas}}\\[3pt]
+  {\small
+    Bengaluru,Karnataka | +91 9398238042 |
+    \href{mailto:avvaru230101015@iiitmanipur.ac.in}{avva230101015@iiitmanipur.ac.in} |
+    \href{https://github.com/Prabhas-1505}{github.com/Prabhas-1505} |
+    \href{https://linkedin.com/in/prabhasavvaru15}{linkedin.com/in/prabhasavvaru15}
+  }
+\end{center}
+\vspace{1pt}
+
+%==============================================================================
+% SUMMARY
+%==============================================================================
+\section{Professional Summary}
+{\small
+Data Science student at IIIT Manipur specializing in \textbf{Machine Learning, Deep Learning, and Predictive Analytics}. Proven track record at \textbf{IIT Ropar} and \textbf{NIT Warangal} engineering high-dimensional data pipelines, training explainable AI models, and optimizing decentralized architectures. Proficient in \textbf{Python, SQL, TensorFlow, and PyTorch}, with a strong background in statistical computing and end-to-end model deployment to solve complex, large-scale analytical problems.
+}
+
+%==============================================================================
+% TECHNICAL SKILLS (Moved up for prime ATS indexing)
+%==============================================================================
+\section{Technical Skills}
+{\small
+\textbf{Data Science \& ML:} Predictive Modeling, Feature Engineering, Unsupervised Clustering, Statistical Imputation, Hyperparameter Tuning, Deep Learning (CNN, LSTM), XGBoost, SHAP (Explainable AI), Retrieval-Augmented Generation (RAG) \\
+\textbf{Languages \& Querying:} Python (Pandas, NumPy, Scikit-Learn, SciPy), SQL, C++, JavaScript, PHP \\
+\textbf{Tools \& Frameworks:} TensorFlow, PyTorch, LangChain, Streamlit, Plotly, Flower (Federated Learning), Git, Jupyter, Qdrant, Redis, Ragas \\
+\textbf{Databases \& Web:} PostgreSQL, MySQL, MongoDB, SQLite, HTML5, CSS3, React, Bootstrap \\
+\textbf{Core Competencies:} Data-Driven Decision Making, Quantitative Analysis, Pipeline Optimization, MLOps, Cross-Functional Leadership
+}
+
+%==============================================================================
+% EXPERIENCE
+%==============================================================================
+\section{Data Science Experience}
+
+\entry{NIT Warangal}{Nov 2025\,--\,Jan 2026}
+      {Data Science \& Bioinformatics Research Intern (Hybrid)}{Warangal, India}
+\begin{itemize}
+  \item Engineered an unsupervised learning and data preprocessing pipeline to normalize, scale, and filter a high-dimensional dataset of \textbf{1,00,064 single cells} utilizing Python, Scanpy, and Seurat.
+  \item Conducted dimensionality reduction and clustering analysis to extract \textbf{14 distinct cell states}, utilizing automated non-coding RNA filtering to isolate high-confidence variance components.
+  \item Integrated deep learning classification techniques to cross-validate diagnostic marker genes, directly feeding results into a downstream predictive pipeline for targeted drug discovery.
+\end{itemize}
+
+\entry{Indian Institute of Technology Ropar}{Dec 2025\,--\,Jan 2026}
+      {Machine Learning Research Intern (Remote)}{Ropar, India}
+\begin{itemize}
+  \item Architected stacked \textbf{LSTM and GRU multi-step forecasting models} in PyTorch to predict 17-step forward clinical sequences across 8 physiological data streams, achieving a peak \textbf{$R^2$ score of 0.75}.
+  \item Implemented an IQR-based anomaly treatment pipeline using extreme outlier fences ($k=3.0$) to isolate true outliers (Output13) and reduce Output13 variance by \textbf{97\%} without corrupting normal data ranges.
+  \item Enforced strict model generalizability via leakage-free \textbf{5-Fold Cross-Validation} (per-fold scaling) and validation-loss early stopping, yielding a \textbf{20\% MSE reduction} (down to 7.11) using stacked GRU layers.
+\end{itemize}
+
+%==============================================================================
+% PROJECTS
+%=============================================l=================================
+\section{Key Data Science Projects}
+
+\proj{Fin-RAG: Multi-Agent Financial Analytics \& Hybrid Retrieval Engine}{May 2026\,--\,Present}
+\begin{itemize}
+  \item Engineered a hybrid retrieval core merging dense (Qdrant + BAAI/bge-large) and sparse (BM25) search rankings via Reciprocal Rank Fusion (RRF); integrated a Cross-Encoder re-ranker to prune noise and optimize context.
+  \item Architected a multi-agent framework utilizing a master Supervisor agent with structured Pydantic output schemas, routing tasks to PDF and SQL Specialists, and running a deterministic Python loop to eliminate infinite loops.
+  \item Built a Redis semantic caching layer to bypass agent reasoning loops, reducing latency to sub-10ms; implemented CI/CD evaluation using Ragas on a golden test dataset to enforce >90\% faithfulness and >85\% recall.
+\end{itemize}
+
+\proj{IPL Analytics Engine \& Match Predictor (End-to-End ML Platform)}{Apr 2026\,--\,May 2026}
+\begin{itemize}
+  \item Developed a robust analytical data ingestion pipeline processing \textbf{260,000+ ball-by-ball records} across 17 historic seasons; engineered rolling team win rates, head-to-head ratios, and situational match metrics.
+  \item Trained and tuned an \textbf{XGBoost classifier} for real-time live match win probabilities, achieving a 57\% prediction accuracy; integrated \textbf{SHAP (Explainable AI)} to quantify and render feature importance weights.
+  \item Deployed a production-ready \textbf{Streamlit} web interface featuring interactive \textbf{Plotly} dashboards, an automated heuristic Lineup Generator, and an OpenAI GPT-powered natural language insights chatbot.
+\end{itemize}
+
+\proj{Forest Guardian AI: Multi-Modal Edge Intelligence Framework}{Jan 2026\,--\,Present}
+\begin{itemize}
+  \item Designed a dual-stream decentralized machine learning architecture utilizing \textbf{Log-Mel Spectrogram CNNs} and \textbf{ResNet-34 U-Net} models for acoustic threat classification and spatial segmentation tasks.
+  \item Implemented \textbf{Federated Learning via Flower (flwr)}, enabling collaborative decentralized training updates while achieving a \textbf{96.3\% communication bandwidth reduction} and securing data privacy.
+  \item Formulated cross-modal veto decision logic that systematically reduced system false-positive metrics by \textbf{87.5\%}, maintaining sub-1000ms end-to-end inferencing latency optimized for edge hardware deployment.
+\end{itemize}
+
+
+
+%==============================================================================
+% EDUCATION
+%==============================================================================
+\section{Education}
+
+\entry{Indian Institute of Information Technology (IIIT) Manipur}{2023\,--\,2027}
+      {B.Tech, Computer Science \& Engineering}{Manipur, India}
+\begin{itemize}
+  \item \textbf{Relevant Coursework:} Machine Learning, Probability \& Statistical Methods, Data Structures \& Algorithms, Database Management Systems (DBMS), Operating Systems, Computer Networks.
+\end{itemize}
+\vspace{1.5pt}
+\noindent\textbf{\small Nxtwave\,|\,Industry-Oriented Technical Training}\hfill\textit{\small July 2024\,--\,Present}\\[0pt]
+{\small\textit{Advanced Focus: Machine Learning Fundamentals, SQL Scripting, Data Pipelines, Stack Development}}
+
+%==============================================================================
+% LEADERSHIP
+%==============================================================================
+\section{Leadership \& Responsibility}
+
+\entry{Ahouba\,--\,IIIT Manipur Annual Techfest}{Jan 2025\,--\,Present}
+      {Sponsorship Lead}{}
+\begin{itemize}
+  \item Spearheaded corporate outreach strategies, leveraging metrics-driven pitch proposals to secure partnerships and sponsorship funding for a multi-stage technical festival scaling across \textbf{1250+ active participants}.
+\end{itemize}
+
+%==============================================================================
+% CERTIFICATIONS
+%==============================================================================
+\section{Certifications \& Achievements}
+
+{\small
+\noindent
+\textbf{Machine Learning Specialization}\,--\,DeepLearning.ai / Stanford / Coursera \hfill \textit{Sep 2025}\\
+\textbf{Data Analytics Professional Certificate}\,--\,IBM / Stanford / Coursera \hfill \textit{Aug 2025}\\
+\textbf{UAV Drone Systems Bootcamp}\,--\,IIT Dhanbad \hfill \textit{Jul 2025}
+}
+
+\end{document}
