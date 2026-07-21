@@ -83,6 +83,7 @@ Thumbs.db
 *.db
 *.pkl
 qdrant_data/
+qdrant_local_data/
 postgres_data/
 redis_data/
 error_log.txt

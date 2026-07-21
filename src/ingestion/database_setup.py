@@ -5,21 +5,27 @@ from sentence_transformers import SentenceTransformer
 import psycopg2
 from rank_bm25 import BM25Okapi
 import pickle
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 class DatabaseManager:
-    def __init__(self, 
-                 qdrant_host: str = "localhost", 
+    def __init__(self,
+                 qdrant_host: str = "localhost",
                  qdrant_port: int = 6333,
+                 qdrant_path: Optional[str] = None,
                  pg_dsn: str = "postgresql://admin:password@localhost:5432/rag_db",
                  embedding_model_name: str = "BAAI/bge-large-en-v1.5"):
-        
+
         self.qdrant_host = qdrant_host
         self.qdrant_port = qdrant_port
         self.pg_dsn = pg_dsn
-        
+
         # Dense Vector Database (Qdrant) Client
-        self.qdrant_client = QdrantClient(host=self.qdrant_host, port=self.qdrant_port)
+        # QDRANT_LOCAL_PATH enables embedded local-file mode (no Docker/server needed)
+        qdrant_path = qdrant_path or os.environ.get("QDRANT_LOCAL_PATH")
+        if qdrant_path:
+            self.qdrant_client = QdrantClient(path=qdrant_path)
+        else:
+            self.qdrant_client = QdrantClient(host=self.qdrant_host, port=self.qdrant_port)
         
         self.embedding_model_name = embedding_model_name
         self._embedding_model = None
@@ -110,18 +116,19 @@ class DatabaseManager:
 
         texts = [chunk["text"] for chunk in chunks]
         metadatas = [chunk["metadata"] for chunk in chunks]
-        
+
         print(f"Generating embeddings for {len(texts)} chunks...")
         embeddings = self.embedding_model.encode(texts).tolist()
-        
-        # Prepare Qdrant points
+
+        # Prepare Qdrant points. Payload must carry the raw text too (not just
+        # metadata) since the reranker reads payload["text"] downstream.
         points = [
             models.PointStruct(
                 id=idx,
                 vector=embedding,
-                payload=meta
+                payload={**meta, "text": text}
             )
-            for idx, (embedding, meta) in enumerate(zip(embeddings, metadatas))
+            for idx, (embedding, meta, text) in enumerate(zip(embeddings, metadatas, texts))
         ]
         
         print("Uploading to Qdrant...")

@@ -1,19 +1,27 @@
 import asyncio
+import os
 from qdrant_client import AsyncQdrantClient
 from sentence_transformers import SentenceTransformer
 import pickle
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 class HybridSearcher:
-    def __init__(self, 
+    def __init__(self,
                  bm25_index_path: str = "bm25_index.pkl",
                  qdrant_host: str = "localhost",
                  qdrant_port: int = 6333,
+                 qdrant_path: Optional[str] = None,
                  collection_name: str = "documents",
                  embedding_model_name: str = "BAAI/bge-large-en-v1.5"):
-        
+
         self.collection_name = collection_name
-        self.qdrant_client = AsyncQdrantClient(host=qdrant_host, port=qdrant_port)
+        # QDRANT_LOCAL_PATH enables Qdrant's embedded local-file mode, so this
+        # runs without a Docker/Qdrant server. Falls back to host/port otherwise.
+        qdrant_path = qdrant_path or os.environ.get("QDRANT_LOCAL_PATH")
+        if qdrant_path:
+            self.qdrant_client = AsyncQdrantClient(path=qdrant_path)
+        else:
+            self.qdrant_client = AsyncQdrantClient(host=qdrant_host, port=qdrant_port)
         self.embedding_model = SentenceTransformer(embedding_model_name)
         
         try:
@@ -65,7 +73,7 @@ class HybridSearcher:
             {
                 "chunk_id": int(idx),
                 "score": float(scores[idx]),
-                "payload": self.chunks[idx]["metadata"]
+                "payload": {**self.chunks[idx]["metadata"], "text": self.chunks[idx]["text"]}
             }
             for idx in top_indices if scores[idx] > 0
         ]
