@@ -113,12 +113,27 @@ cp .env.example .env
 ```
 Open `.env` and fill in your `OPENAI_API_KEY`.
 
-### 3. Spin Up Database Infrastructure (Optional)
-To use the fully featured Postgres, Qdrant, and Redis environments:
+### 3. Spin Up Database Infrastructure
+Two supported paths, no Docker required for either:
+
+**Option A — Homebrew (used in this project's actual verified setup):**
+```bash
+brew install postgresql@16 redis
+brew services start postgresql@16
+brew services start redis
+psql postgres -c "CREATE ROLE admin WITH LOGIN PASSWORD 'password' SUPERUSER;"
+psql postgres -c "CREATE DATABASE rag_db OWNER admin;"
+PYTHONPATH=. python src/ingestion/database_setup.py  # creates tables
+PYTHONPATH=. python src/ingestion/seed_real_financials.py  # seeds real quarterly data (5 companies, sourced from stockanalysis.com)
+```
+Qdrant runs in embedded local-file mode automatically (set via `QDRANT_LOCAL_PATH` in `.env`) — no separate install needed.
+
+**Option B — Docker**, if you'd rather use the original `docker-compose.yml`:
 ```bash
 docker-compose up -d
 ```
-*(Note: If Docker is not running or installed, the project automatically falls back to SQLite, local BM25 indexing, and in-memory caches, so you can still run the full application!)*
+
+*(If neither Postgres nor Redis nor Qdrant is reachable, the project gracefully falls back to SQLite, local BM25 indexing, and in-memory caching — but the real, verified setup for this project uses Option A.)*
 
 ---
 

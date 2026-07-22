@@ -39,6 +39,10 @@ def create_sql_specialist():
     Database Schema:
     - companies(ticker VARCHAR(10) PRIMARY KEY, company_name VARCHAR(100), sector VARCHAR(50), industry VARCHAR(50))
     - financial_metrics(id SERIAL PRIMARY KEY, ticker VARCHAR(10) REFERENCES companies, quarter VARCHAR(10), revenue_millions DECIMAL, net_income_millions DECIMAL, eps DECIMAL, recorded_at TIMESTAMP)
+
+    IMPORTANT: the `quarter` column uses the exact format 'Q<n>-<year>', hyphenated with no space
+    (e.g., 'Q1-2026', 'Q4-2025'). Never write 'Q1 2026' or 'Q1 2026' with a space - it will not match.
+    Tickers are uppercase (e.g., 'AAPL', 'MSFT', 'TSLA', 'AMZN', 'GOOGL').
     """
     
     prompt = ChatPromptTemplate.from_messages([
