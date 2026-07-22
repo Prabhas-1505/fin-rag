@@ -1,0 +1,24 @@
+databases:
+  - name: fin-rag-db
+    plan: free
+    databaseName: rag_db
+    user: admin
+
+services:
+  - type: web
+    name: fin-rag
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python scripts/bootstrap.py && uvicorn src.api.server:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: PG_DSN
+        fromDatabase:
+          name: fin-rag-db
+          property: connectionString
+      - key: QDRANT_LOCAL_PATH
+        value: ./qdrant_local_data
+      - key: PYTHONPATH
+        value: .

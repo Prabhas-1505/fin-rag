@@ -137,6 +137,19 @@ docker-compose up -d
 
 ---
 
+## ☁️ Deploying (Render)
+
+A `render.yaml` blueprint is included for a one-click hosted deploy:
+
+1. Fork/push this repo to your own GitHub, then in the [Render dashboard](https://dashboard.render.com), choose **New → Blueprint** and connect this repo.
+2. Render reads `render.yaml` and provisions a free web service + a free managed Postgres database automatically.
+3. Set the one required secret it can't infer: `OPENAI_API_KEY`, in the service's Environment tab.
+4. Deploy. The start command runs `scripts/bootstrap.py` first (creates the schema, seeds the real financial data, ingests the sample document into embedded Qdrant), then launches the API + dashboard.
+
+Note: this deployment intentionally skips a hosted Redis instance to stay on free tiers — the semantic cache's existing local in-memory fallback (see `src/api/redis_cache.py`) handles this gracefully, it just won't persist across restarts. Render's free Postgres tier also expires after 90 days, per Render's own policy, not something this project controls.
+
+---
+
 ## 🏃 Running the Application
 
 ### Option A: Open the Interactive Web Dashboard (Recommended)

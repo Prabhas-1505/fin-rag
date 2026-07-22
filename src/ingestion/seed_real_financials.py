@@ -6,12 +6,13 @@ unreachable.
 
 Usage: PYTHONPATH=. python src/ingestion/seed_real_financials.py
 """
+import os
 import psycopg2
 from dotenv import load_dotenv
 
 load_dotenv()
 
-PG_DSN = "postgresql://admin:password@localhost:5432/rag_db"
+PG_DSN = os.environ.get("PG_DSN", "postgresql://admin:password@localhost:5432/rag_db")
 
 COMPANIES = [
     ("AAPL", "Apple Inc.", "Technology", "Consumer Electronics"),

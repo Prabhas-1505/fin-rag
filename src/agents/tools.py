@@ -1,4 +1,5 @@
 import asyncio
+import os
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
@@ -175,7 +176,7 @@ def sql_executor_tool(query: str) -> str:
     DO NOT use this for DROP, INSERT, or UPDATE queries.
     """
     # Note: In production, use a read-only role and limit execution time
-    pg_dsn = "postgresql://admin:password@localhost:5432/rag_db"
+    pg_dsn = os.environ.get("PG_DSN", "postgresql://admin:password@localhost:5432/rag_db")
     
     if not query.strip().upper().startswith("SELECT"):
         return "Error: Only SELECT queries are allowed."

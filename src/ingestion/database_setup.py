@@ -12,7 +12,7 @@ class DatabaseManager:
                  qdrant_host: str = "localhost",
                  qdrant_port: int = 6333,
                  qdrant_path: Optional[str] = None,
-                 pg_dsn: str = "postgresql://admin:password@localhost:5432/rag_db",
+                 pg_dsn: str = os.environ.get("PG_DSN", "postgresql://admin:password@localhost:5432/rag_db"),
                  embedding_model_name: str = "BAAI/bge-large-en-v1.5"):
 
         self.qdrant_host = qdrant_host
