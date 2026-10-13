@@ -1,6 +1,6 @@
-langchain
-langchain-core
-langchain-openai
+langchain>=0.3,<0.4
+langchain-core>=0.3,<0.4
+langchain-openai>=0.3,<0.4
 qdrant-client
 psycopg2-binary
 sqlalchemy
@@ -14,7 +14,7 @@ nest_asyncio
 ragas
 datasets
 tiktoken
-langchain-text-splitters
+langchain-text-splitters>=0.3,<0.4
 pyrefly
 fastapi
 uvicorn
