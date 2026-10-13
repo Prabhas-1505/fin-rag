@@ -1,13 +1,17 @@
 import os
-from qdrant_client import QdrantClient
-from qdrant_client.http import models
-from sentence_transformers import SentenceTransformer
 import psycopg2
 from rank_bm25 import BM25Okapi
 import pickle
 from typing import List, Dict, Any, Optional
 
 class DatabaseManager:
+    """
+    Handles Postgres schema setup plus the dense-backend's Qdrant/embedding
+    setup. The qdrant_client/sentence_transformers imports are deferred to
+    their respective properties/methods so that pure Postgres usage (e.g.
+    bootstrap on the lightweight retrieval backend) never pulls in torch.
+    """
+
     def __init__(self,
                  qdrant_host: str = "localhost",
                  qdrant_port: int = 6333,
@@ -17,38 +21,45 @@ class DatabaseManager:
 
         self.qdrant_host = qdrant_host
         self.qdrant_port = qdrant_port
+        self.qdrant_path = qdrant_path or os.environ.get("QDRANT_LOCAL_PATH")
         self.pg_dsn = pg_dsn
 
-        # Dense Vector Database (Qdrant) Client
-        # QDRANT_LOCAL_PATH enables embedded local-file mode (no Docker/server needed)
-        qdrant_path = qdrant_path or os.environ.get("QDRANT_LOCAL_PATH")
-        if qdrant_path:
-            self.qdrant_client = QdrantClient(path=qdrant_path)
-        else:
-            self.qdrant_client = QdrantClient(host=self.qdrant_host, port=self.qdrant_port)
-        
+        self._qdrant_client = None
         self.embedding_model_name = embedding_model_name
         self._embedding_model = None
         # Default bge-large-en vector size to avoid loading model just to get the dimension
-        self.vector_size = 1024 
-        
+        self.vector_size = 1024
+
+    @property
+    def qdrant_client(self):
+        if self._qdrant_client is None:
+            from qdrant_client import QdrantClient
+            # QDRANT_LOCAL_PATH enables embedded local-file mode (no Docker/server needed)
+            if self.qdrant_path:
+                self._qdrant_client = QdrantClient(path=self.qdrant_path)
+            else:
+                self._qdrant_client = QdrantClient(host=self.qdrant_host, port=self.qdrant_port)
+        return self._qdrant_client
+
     @property
     def embedding_model(self):
         if self._embedding_model is None:
+            from sentence_transformers import SentenceTransformer
             print("[System] Initializing SentenceTransformer (Downloading models if first time)...")
             self._embedding_model = SentenceTransformer(self.embedding_model_name)
         return self._embedding_model
-        
+
     def setup_qdrant_collection(self, collection_name: str = "documents"):
         """
         Creates a Qdrant collection if it doesn't exist.
         """
+        from qdrant_client.http import models
         collections = [c.name for c in self.qdrant_client.get_collections().collections]
         if collection_name not in collections:
             self.qdrant_client.create_collection(
                 collection_name=collection_name,
                 vectors_config=models.VectorParams(
-                    size=self.vector_size, 
+                    size=self.vector_size,
                     distance=models.Distance.COSINE
                 ),
             )
@@ -110,6 +121,7 @@ class DatabaseManager:
         """
         Embeds text chunks and uploads them to Qdrant.
         """
+        from qdrant_client.http import models
         if not chunks:
             print("No chunks to ingest.")
             return

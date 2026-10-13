@@ -14,6 +14,12 @@ services:
     envVars:
       - key: OPENAI_API_KEY
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: LLM_PROVIDER
+        value: openai
+      - key: RETRIEVAL_BACKEND
+        value: lightweight
       - key: PG_DSN
         fromDatabase:
           name: fin-rag-db

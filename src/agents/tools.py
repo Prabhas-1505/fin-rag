@@ -3,26 +3,39 @@ import os
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
-from src.retrieval.hybrid_search import HybridSearcher
-from src.retrieval.reranker import Reranker
 import psycopg2
 import json
 import sqlite3
 
-# Lazy-loaded global instances
+# Lazy-loaded global instances. Which backend gets imported/loaded depends on
+# RETRIEVAL_BACKEND ("lightweight" default): the "dense" path pulls in
+# sentence-transformers/torch/Qdrant, the "lightweight" path never touches them.
 _searcher = None
 _reranker = None
+
+
+def _retrieval_backend() -> str:
+    return os.environ.get("RETRIEVAL_BACKEND", "lightweight").lower()
+
 
 def get_searcher():
     global _searcher
     if _searcher is None:
-        print("[System] Initializing HybridSearcher (Downloading models if first time)...")
-        _searcher = HybridSearcher()
+        if _retrieval_backend() == "dense":
+            from src.retrieval.hybrid_search import HybridSearcher
+            print("[System] Initializing HybridSearcher (Downloading models if first time)...")
+            _searcher = HybridSearcher()
+        else:
+            from src.retrieval.lightweight_hybrid import LightweightHybridSearcher
+            print("[System] Initializing LightweightHybridSearcher (hashed TF-IDF + BM25)...")
+            _searcher = LightweightHybridSearcher()
     return _searcher
+
 
 def get_reranker():
     global _reranker
     if _reranker is None:
+        from src.retrieval.reranker import Reranker
         print("[System] Initializing Reranker (Downloading models if first time)...")
         _reranker = Reranker()
     return _reranker
@@ -137,24 +150,36 @@ def pdf_search_tool(query: str) -> str:
     Returns the top matching text chunks.
     """
     try:
-        # Since tools are typically synchronous in LCEL unless using aasync, we can run the event loop
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                import nest_asyncio
-                nest_asyncio.apply()
-            retrieved = loop.run_until_complete(get_searcher().hybrid_search(query, top_k=20))
-        except RuntimeError:
-            retrieved = asyncio.run(get_searcher().hybrid_search(query, top_k=20))
-            
-        top_chunks = get_reranker().rerank(query, retrieved, top_k=4)
-        
+        if _retrieval_backend() == "dense":
+            # Dense path is async (Qdrant client) and benefits from a cross-encoder rerank pass.
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    import nest_asyncio
+                    nest_asyncio.apply()
+                retrieved = loop.run_until_complete(get_searcher().hybrid_search(query, top_k=20))
+            except RuntimeError:
+                retrieved = asyncio.run(get_searcher().hybrid_search(query, top_k=20))
+
+            top_chunks = get_reranker().rerank(query, retrieved, top_k=4)
+        else:
+            # Lightweight path is pure in-memory numpy/sklearn: synchronous, no rerank model.
+            top_chunks = get_searcher().hybrid_search(query, top_k=4)
+
+        # Layer 2 (anti-poisoning): drop any chunk whose text carries an
+        # injected instruction, then wrap the survivors as explicitly
+        # untrusted data before they reach the specialist's prompt.
+        from src.security.injection_defense import quarantine_chunks, wrap_untrusted
+        clean_chunks, flagged_chunks = quarantine_chunks(top_chunks)
+        if flagged_chunks:
+            print(f"[Security] Quarantined {len(flagged_chunks)} chunk(s) with suspected injected instructions.")
+
         # Extract the text and format it
         results_text = []
-        for chunk in top_chunks:
+        for chunk in clean_chunks:
             text = chunk.get("payload", {}).get("text", "")
             source = chunk.get("payload", {}).get("source_id", "Unknown source")
-            results_text.append(f"Source: {source}\nContent: {text}\n")
+            results_text.append(f"Source: {source}\nContent: {wrap_untrusted(text)}\n")
             
         if not results_text:
             return run_mock_pdf_search(query)

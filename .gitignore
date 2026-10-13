@@ -91,3 +91,6 @@ error_log.txt
 # Frontend (React)
 frontend/node_modules/
 src/api/react_dist/
+
+# SmartRAG eval corpus (fetched on demand by scripts/fetch_eval_corpus.py)
+data/eval_corpus/

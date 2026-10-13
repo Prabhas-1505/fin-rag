@@ -10,10 +10,14 @@ class DocumentProcessor:
         """
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
-        # Using tiktoken for accurate token counting
+        # Using tiktoken for accurate token counting. disallowed_special=()
+        # treats token-like substrings (e.g. a document that quotes
+        # "<|endoftext|>" as an example attack string) as plain text instead
+        # of raising - we're only counting tokens, never executing them.
         self.text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap,
+            disallowed_special=(),
         )
 
     def parse_pdf(self, file_path: str) -> str:

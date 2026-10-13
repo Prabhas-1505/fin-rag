@@ -20,10 +20,12 @@ from src.agents.supervisor_loop import Supervisor, RouteDecision
 
 def main():
     
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("\n[ERROR] OPENAI_API_KEY is not set!")
-        print("Please create a .env file and add your OpenAI API key to run the AI Agents.")
-        print("Example: OPENAI_API_KEY=sk-your-key-here\n")
+    provider = os.environ.get("LLM_PROVIDER", "openai").lower()
+    required_key = "GROQ_API_KEY" if provider == "groq" else "OPENAI_API_KEY"
+    if not os.environ.get(required_key):
+        print(f"\n[ERROR] {required_key} is not set!")
+        print(f"Please create a .env file and add your {provider} API key to run the AI Agents.")
+        print(f"Example: {required_key}=your-key-here\n")
         return
 
     print("\n" + "="*50)

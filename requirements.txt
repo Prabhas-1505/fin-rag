@@ -1,6 +1,8 @@
 langchain==0.3.30
 langchain-core==0.3.86
 langchain-openai==0.3.35
+langchain-groq==0.3.8
+scikit-learn
 qdrant-client
 psycopg2-binary
 sqlalchemy

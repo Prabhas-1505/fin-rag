@@ -23,9 +23,15 @@ from src.api.redis_cache import SemanticCache
 
 app = FastAPI(title="FIN-RAG Master Supervisor API", version="1.0.0")
 
-# Initialize agent supervisor and semantic cache
+# Initialize agent supervisor and semantic cache. When the lightweight
+# retrieval backend is active, the cache uses the same hashed-TFIDF embedder
+# instead of SentenceTransformer, so torch never loads in that mode.
 supervisor = Supervisor()
-cache = SemanticCache()
+if os.environ.get("RETRIEVAL_BACKEND", "lightweight").lower() == "dense":
+    cache = SemanticCache()
+else:
+    from src.retrieval.lightweight_hybrid import HashingTfidfEmbedder
+    cache = SemanticCache(embedder=HashingTfidfEmbedder())
 
 class ChatMessage(BaseModel):
     role: str # "user" or "assistant"
@@ -49,7 +55,14 @@ class ChatResponse(BaseModel):
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     query = request.message
-    
+
+    # 0. Layer 1 (anti-poisoning pipeline): screen the raw query before any LLM call.
+    from src.security.injection_defense import screen_user_input, validate_output, REFUSAL_MESSAGE
+    input_screen = screen_user_input(query)
+    if input_screen.blocked:
+        print(f"[Security] Blocked input query (category={input_screen.category})")
+        return ChatResponse(answer=REFUSAL_MESSAGE, cache_hit=False, trace=[])
+
     # 1. Check Semantic Cache
     print(f"[API] Checking semantic cache for query: '{query}'")
     cached_answer = cache.check_cache(query)
@@ -127,10 +140,22 @@ async def chat_endpoint(request: ChatRequest):
             
         trace.append(step)
         
-    # 3. Store in Semantic Cache
-    if final_answer and not final_answer.startswith("System halted"):
+    # 3. Layer 3 (anti-poisoning pipeline): validate the final answer before it
+    # ever reaches the user or the cache.
+    output_screen = validate_output(
+        final_answer,
+        system_prompt_fragments=[
+            "Master Supervisor routing requests to specialist agents",
+            "elite Research Specialist",
+            "elite SQL Analytics Specialist",
+        ],
+    )
+    if output_screen.blocked:
+        print(f"[Security] Blocked output (category={output_screen.category})")
+        final_answer = REFUSAL_MESSAGE
+    elif final_answer and not final_answer.startswith("System halted"):
         cache.set_cache(query, final_answer)
-        
+
     return ChatResponse(
         answer=final_answer,
         cache_hit=False,

@@ -1,31 +1,37 @@
 import redis
 import json
-from sentence_transformers import SentenceTransformer
 from typing import Optional, Dict, Any, List, cast
 import numpy as np
 
 class SemanticCache:
-    def __init__(self, 
-                 redis_host: str = "localhost", 
+    def __init__(self,
+                 redis_host: str = "localhost",
                  redis_port: int = 6379,
                  embedding_model_name: str = "BAAI/bge-large-en-v1.5",
-                 similarity_threshold: float = 0.95):
+                 similarity_threshold: float = 0.95,
+                 embedder: Optional[Any] = None):
         """
         Initializes the semantic cache layer using Redis.
         Stores queries and their embeddings to bypass the agent loop for repeated questions.
+
+        `embedder`, if given, must expose `.encode(text) -> array-like` and is
+        used instead of the default SentenceTransformer model - pass a
+        HashingTfidfEmbedder here to avoid loading torch when the lightweight
+        retrieval backend is active.
         """
         self.redis_client = redis.Redis(host=redis_host, port=redis_port, decode_responses=False)
         self.embedding_model_name = embedding_model_name
-        self._embedding_model = None
+        self._embedder = embedder
         self.similarity_threshold = similarity_threshold
         self._local_cache = {}
 
     @property
-    def embedding_model(self):
-        if self._embedding_model is None:
+    def embedder(self):
+        if self._embedder is None:
+            from sentence_transformers import SentenceTransformer
             print("[System] Initializing SentenceTransformer (Downloading models if first time)...")
-            self._embedding_model = SentenceTransformer(self.embedding_model_name)
-        return self._embedding_model
+            self._embedder = SentenceTransformer(self.embedding_model_name)
+        return self._embedder
 
     def get_cosine_similarity(self, vec1: np.ndarray, vec2: np.ndarray) -> float:
         """
@@ -44,7 +50,7 @@ class SemanticCache:
         Returns the cached answer if similarity > threshold, otherwise None.
         """
         try:
-            query_embedding = np.asarray(self.embedding_model.encode(query))
+            query_embedding = np.asarray(self.embedder.encode(query))
             
             # Check if Redis is online
             use_redis = True
@@ -99,7 +105,7 @@ class SemanticCache:
         Saves a query, its embedding, and the answer to Redis and local fallback.
         """
         try:
-            query_embedding = self.embedding_model.encode(query).tolist()
+            query_embedding = np.asarray(self.embedder.encode(query)).tolist()
             
             # Simple hash or counter for key
             key_id = hash(query) % 1000000

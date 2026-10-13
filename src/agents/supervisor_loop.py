@@ -2,7 +2,6 @@ import warnings
 # Silence all warnings (including Pydantic/LangChain serialization warnings) for clean console logs
 warnings.simplefilter("ignore")
 
-from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from typing import Literal, List, Dict, Any, cast
@@ -12,6 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.agents.specialists import create_pdf_specialist, create_sql_specialist
+from src.llm.provider import get_chat_llm
 import json
 
 class RouteDecision(BaseModel):
@@ -25,7 +25,7 @@ class RouteDecision(BaseModel):
 class Supervisor:
     def __init__(self):
         # We use strict structured output to ensure the LLM never hallucinates a bad route
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        llm = get_chat_llm()
         self.structured_llm = llm.with_structured_output(RouteDecision)
         
         self.prompt = ChatPromptTemplate.from_messages([
