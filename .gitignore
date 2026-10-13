@@ -87,3 +87,7 @@ qdrant_local_data/
 postgres_data/
 redis_data/
 error_log.txt
+
+# Frontend (React)
+frontend/node_modules/
+src/api/react_dist/

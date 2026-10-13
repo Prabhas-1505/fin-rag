@@ -3,6 +3,12 @@ import warnings
 # Silence all warnings (including Pydantic/LangChain serialization warnings) for clean console logs
 warnings.simplefilter("ignore")
 
+# Force transformers/sentence-transformers to skip probing for a TensorFlow backend.
+# On machines with TensorFlow installed, that eager import can hang for minutes
+# (observed: absl/grpc mutex deadlock) -- we only ever use the PyTorch backend here.
+os.environ.setdefault("USE_TF", "0")
+os.environ.setdefault("USE_TORCH", "1")
+
 # pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 

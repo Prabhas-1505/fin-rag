@@ -13,10 +13,10 @@ The project orchestrates two specialized worker agents through a structured Mast
 ```mermaid
 graph TD
     User([User Query]) --> Cache{Semantic Cache Check}
-    Cache -- Hit (Similarity >= 95%) --> ReturnCached[Return Cached Answer]
+    Cache -- "Hit (Similarity >= 95%)" --> ReturnCached[Return Cached Answer]
     Cache -- Miss --> SupLoop[Supervisor Loop]
     
-    subgraph Supervisor Loop (Max 5 Iterations)
+    subgraph SupervisorLoop ["Supervisor Loop (Max 5 Iterations)"]
         SupLoop --> Super[Supervisor Agent]
         Super --> Route{Router Decision}
         
@@ -71,6 +71,7 @@ graph TD
 ├── main.py                     # CLI entrypoint
 ├── requirements.txt            # Python dependencies
 ├── docker-compose.yml          # Container configuration (Qdrant, Postgres, Redis)
+├── frontend/                   # React dashboard source (Vite)
 └── src/
     ├── agents/
     │   ├── tools.py            # LangChain tools with production fallbacks
@@ -79,7 +80,8 @@ graph TD
     ├── api/
     │   ├── redis_cache.py      # Semantic cache (Redis client & NumPy Cosine math)
     │   ├── server.py           # FastAPI backend
-    │   └── static/             # Frontend Dashboard UI (HTML, CSS, JS)
+    │   ├── static/             # Legacy vanilla JS dashboard (fallback if React isn't built)
+    │   └── react_dist/         # Built React dashboard output (gitignored, run `npm run build`)
     ├── retrieval/
     │   ├── hybrid_search.py    # Dense/Sparse RRF logic
     │   └── reranker.py         # Cross-Encoder re-ranker
@@ -153,6 +155,13 @@ Note: this deployment intentionally skips a hosted Redis instance to stay on fre
 ## 🏃 Running the Application
 
 ### Option A: Open the Interactive Web Dashboard (Recommended)
+Build the React dashboard once (outputs to `src/api/react_dist/`, which FastAPI serves automatically):
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+```
 Start the FastAPI backend server:
 ```bash
 PYTHONPATH=. python src/api/server.py
@@ -162,6 +171,13 @@ Or use uvicorn directly:
 PYTHONPATH=. uvicorn src.api.server:app --reload --host 127.0.0.1 --port 8000
 ```
 Open **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)** in your web browser.
+
+**Frontend development** (hot-reload against a running backend on port 8000):
+```bash
+cd frontend
+npm run dev
+```
+Open the Vite dev server URL it prints (typically `http://localhost:5173`) — `/api` calls are proxied to the FastAPI backend.
 
 ### Option B: Terminal CLI Chat
 Start the interactive terminal session:

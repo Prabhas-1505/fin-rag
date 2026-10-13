@@ -3,6 +3,12 @@ import warnings
 # Silence all warnings (including Pydantic/LangChain serialization warnings) for clean console logs
 warnings.simplefilter("ignore")
 
+# Force transformers/sentence-transformers to skip probing for a TensorFlow backend.
+# On machines with TensorFlow installed, that eager import can hang for minutes
+# (observed: absl/grpc mutex deadlock) -- we only ever use the PyTorch backend here.
+os.environ.setdefault("USE_TF", "0")
+os.environ.setdefault("USE_TORCH", "1")
+
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -131,9 +137,12 @@ async def chat_endpoint(request: ChatRequest):
         trace=trace
     )
 
-# Mount the static files (Frontend dashboard)
-static_dir = os.path.join(os.path.dirname(__file__), "static")
-if os.path.exists(static_dir):
-    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+# Mount the built React dashboard (falls back to the legacy static dashboard if not built)
+react_dist_dir = os.path.join(os.path.dirname(__file__), "react_dist")
+legacy_static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.exists(react_dist_dir):
+    app.mount("/", StaticFiles(directory=react_dist_dir, html=True), name="static")
+elif os.path.exists(legacy_static_dir):
+    app.mount("/", StaticFiles(directory=legacy_static_dir, html=True), name="static")
 else:
-    print(f"Warning: Static files directory not found at {static_dir}")
+    print(f"Warning: No frontend build found at {react_dist_dir} or {legacy_static_dir}")
